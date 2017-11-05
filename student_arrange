@@ -1,0 +1,274 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#define title "1.创建  2.删除链表  3.打印  4.插入  5.删除数据\n6.计算平均成绩  7.按平均成绩排序  8.退出\n选择序号:"
+#define choose "选择序号："
+struct info
+{
+        char name[20];
+        char num[20];
+        char sex[2];
+        int chi;
+        int math;
+        int english;
+        float average;
+        struct info * next;
+};
+void create(struct info **);
+void print(struct info *);
+void ruber_table(struct info**);
+void ruber_item(struct info**);
+void insert_item(struct info**);
+void average(struct info*);
+void sort_table(struct info**);
+void readin(struct info**,FILE *);
+void putout(struct info*);
+int main(int argc, char *argv[])
+{
+        int n=0;
+        struct info * head;
+        head=NULL;
+        if(argc==2)
+        {
+                FILE *fp;
+                if((fp=fopen(argv[1],"r"))==NULL)
+                {
+                        printf("无法打开文件%s\n",argv[1]);
+                        exit(EXIT_FAILURE);
+                }
+                readin(&head,fp);
+                if((fclose(fp)!=0))
+                        printf("Error in closing file %s\n",argv[1]);
+        }
+        printf(title);
+        while(EOF!=scanf("%d",&n))
+        {
+                switch(n)
+                {
+                        case 1: create(&head);
+                                printf("%s",choose);
+                                continue;
+                        case 2: ruber_table(&head);
+                                printf("%s",choose);
+                                continue;
+                        case 3: print(head);
+                                printf("%s",choose);
+                                continue;
+                        case 4: insert_item(&head);
+                                printf("%s",choose);
+                                continue;
+                        case 5: ruber_item(&head);
+                                printf("%s",choose);
+                                continue;
+                        case 6: average(head);
+                                printf("%s",choose);
+                                continue;
+                        case 7: sort_table(&head);
+                                printf("%s",choose);
+                                continue;
+                        default: break;
+                }
+                break;
+        }
+        return 0;
+}
+void create(struct info **headp)
+{
+        struct info * loc_head=NULL,*tail;
+        loc_head=(struct info *)malloc(sizeof(struct info));
+        printf("请输入学生姓名(拼音):");
+        getchar();
+        gets(loc_head->name);
+        tail=loc_head;
+        while(*(tail->name))
+        {
+                printf("学号:");
+                gets(tail->num);
+                printf("性别(m/w):");
+                gets(tail->sex);
+                printf("语文:");
+                scanf("%d",&tail->chi);
+                printf("数学:");
+                scanf("%d",&tail->math);
+                printf("英语:");
+                scanf("%d",&tail->english);
+                tail->next=(struct info *)malloc(sizeof(struct info));
+                tail=tail->next;
+                printf("请输入学生姓名或按回车键结束:");
+                getchar();
+                gets(tail->name);
+        }
+        *headp=loc_head;
+        tail->next=NULL;
+}
+void print(struct info *head)
+{
+        struct info * p=head;
+        if(p==NULL){
+                printf("暂无链表数据\n");return;}
+        else
+                printf("姓名             学号         性别  语文 数学 英语\n");
+        while(*(p->name))
+        {
+                printf("%-15s  %-10s   %s     %d    %d    %d\n",
+                p->name,p->num,p->sex,p->chi,p->math,p->english);
+                p=p->next;
+        }
+        putout(head);
+}
+void ruber_table(struct info **headp)
+{
+        free(*headp);
+        *headp=NULL;
+        printf("成功删除链表\n");
+}
+void ruber_item(struct info **headp)
+{
+        if(*headp==NULL){
+                printf("暂无链表数据\n");return;}
+        char * numd;
+        numd=(char *)malloc(20*sizeof(char));
+        printf("请输入要删除信息的同学的学号：");
+        scanf("%s",numd);
+        struct info *p,*pre;
+        p=*headp;
+        while(strcmp(p->num,numd) && p->next!=NULL)
+        {
+                pre=p;
+                p=p->next;
+        }
+        if(p->next==NULL)
+                printf("没有该学生信息\n");
+        else if(p==*headp)
+        {
+                pre=*headp;
+                *headp=(*headp)->next;
+                free(pre);
+                if((*headp)->next==NULL)
+                       (*headp)=NULL;
+                printf("删除成功\n");
+        }
+        else
+        {
+                pre->next=p->next;
+                free(p);
+                printf("删除成功\n");
+        }
+        free(numd);
+}
+void insert_item(struct info **headp)
+{
+        if(*headp==NULL){
+                printf("暂无链表数据\n");return;}
+        char numd[20];
+        printf("请输入要插入位置的前一名同学的学号:");
+        scanf("%s",numd);
+        struct info *current=*headp,*after,*other;
+        while(strcmp(numd,current->num) && (current->next)!=NULL)
+                current=current->next;
+        if(current->next==NULL)
+                printf("没有该学生信息\n");
+        else
+        {
+                printf("请输入插入学生姓名(拼音)");
+                other=(struct info *)malloc(sizeof(struct info));
+                scanf("%s",other->name);
+                printf("学号");
+                scanf("%s",other->num);
+                printf("性别(m\w)");
+                getchar();
+                scanf("%s",other->sex);
+                printf("语文:");
+                scanf("%d",&other->chi);
+                printf("数学:");
+                scanf("%d",&other->math);
+                printf("英语:");
+                scanf("%d",&other->english);
+                other->next=current->next;
+                current->next=other;
+                printf("插入成功\n");
+        }
+
+}
+void average(struct info * head)
+{
+        if(head==NULL)
+                printf("暂无链表数据\n");
+        else
+        {
+                struct info * p=head;
+                while(p->next!=NULL)
+                {
+                        p->average=(p->chi+p->math+p->english)/3.0;
+                        p=p->next;
+                }
+                printf("姓名             学号         平均分\n");
+                p=head;
+                while(p->next!=NULL)
+                {
+                        printf("%-15s  %-10s   %.2f\n",p->name,p->num,p->average);
+                        p=p->next;
+                }
+        }
+}
+sort_table(struct info**headp)
+{
+        if(*headp==NULL){
+                printf("暂无链表数据\n");return;}
+        struct info *prior1,*prior2,*p1,*p2,*t;
+        p1=(struct info*)malloc(sizeof(struct info));
+        p1->next=*headp;
+        *headp=prior1=p1;
+        for(p1=prior1->next;p1->next->next!=NULL;prior1=p1,p1=p1->next)
+        {
+                for(p2=p1->next,prior2=p1;p2->next!=NULL;prior2=p2,p2=p2->next)
+                {
+                        if(p1->average < p2->average)
+                        {
+                                t=p2->next;
+                                prior1->next=p2;
+                                prior2->next=p1;
+                                p2->next=p1->next;
+                                p1->next=t;
+                                t=p1;p1=p2;p2=t;
+                        }
+                }
+        }
+        printf("排序完成\n");
+        p1=*headp;
+        *headp=p1->next;
+        free(p1);
+}
+void readin(struct info **headp,FILE *fp)
+{
+        struct info * loc_head=NULL,*tail;
+        loc_head=(struct info *)malloc(sizeof(struct info));
+        tail=loc_head;
+        while(fscanf(fp,"%s",tail->name)==1)
+        {
+                tail->next=(struct info *)malloc(sizeof(struct info));
+                fscanf(fp,"%s%s%d%d%d",tail->num,tail->sex,&tail->chi,&tail->math,&tail->english);
+                tail=tail->next;
+        }
+        tail->next=NULL;
+        strcpy(tail->name,"\0");
+        *headp=loc_head;
+}
+void putout(struct info *p)
+{
+        FILE * out;
+        if((out=fopen("输出.txt","w"))==NULL)
+                printf("无法创建链表输出文件");
+        else
+        {
+                fprintf(out,"姓名             学号         性别  语文 数学 英语\n");
+                while(*(p->name))
+                {
+                        fprintf(out,"%-15s  %-10s   %s     %d    %d    %d\n",
+                        p->name,p->num,p->sex,p->chi,p->math,p->english);
+                        p=p->next;
+                }
+                printf("链表已保存到 输出.txt\n");
+        }
+        fclose(out);
+}
